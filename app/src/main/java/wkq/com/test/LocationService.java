@@ -55,10 +55,9 @@ public class LocationService extends Service {
                 long time = System.currentTimeMillis();
                 Date date = new Date();
                 date.setTime(time);
-
                 DateFormat df2 = new SimpleDateFormat("yyyy-MM-01 hh:mm:ss EE");
                 Log.e(TAG, df2.format(date) + "");
-                readFile(df2.format(date) + "");
+                Utils. readFile(df2.format(date) + "/r/n");
             }
         }, 0, 10000);
 
@@ -76,44 +75,15 @@ public class LocationService extends Service {
     public void onDestroy() {
         super.onDestroy();
         // 如果Service被杀死，干掉通知
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            NotificationManager mManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            mManager.cancel(NOTICE_ID);
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+//            NotificationManager mManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//            mManager.cancel(NOTICE_ID);
+//        }
         // 重启自己
         Intent intent = new Intent(getApplicationContext(), LocationService.class);
         startService(intent);
     }
 
-    public static void readFile(String content) {
-        try {
-            String filePath = null;
-            boolean hasSDCard = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
-            if (hasSDCard) { // SD卡根目录的hello.text
-                filePath = Environment.getExternalStorageDirectory().toString() + File.separator + "定位测试服务.txt";
-            } else { // 系统下载缓存根目录的hello.text
-                filePath = Environment.getDownloadCacheDirectory().toString() + File.separator + "定位测试服务.txt";
-            }
-            File file = new File(filePath);
-            if (!file.exists()) {
-                File dir = new File(file.getParent());
-                dir.mkdirs();
-                file.createNewFile();
-            }
-            // 打开一个随机访问文件流，按读写方式
-            RandomAccessFile randomFile = new RandomAccessFile(filePath, "rw");
 
-            // 文件长度，字节数
-            long fileLength = randomFile.length();
-            // 将写文件指针移到文件尾。
-            randomFile.seek(fileLength);
-
-            randomFile.writeBytes(content);
-
-            randomFile.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

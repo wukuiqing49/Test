@@ -5,8 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.PowerManager;
 import android.provider.Settings;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 import static android.content.Context.POWER_SERVICE;
 
@@ -59,6 +64,35 @@ public class Utils {
         }
     }
 
+    public static void readFile(String content) {
+        try {
+            String filePath = null;
+            boolean hasSDCard = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+            if (hasSDCard) { // SD卡根目录的hello.text
+                filePath = Environment.getExternalStorageDirectory().toString() + File.separator + "定位测试服务.txt";
+            } else { // 系统下载缓存根目录的hello.text
+                filePath = Environment.getDownloadCacheDirectory().toString() + File.separator + "定位测试服务.txt";
+            }
+            File file = new File(filePath);
+            if (!file.exists()) {
+                File dir = new File(file.getParent());
+                dir.mkdirs();
+                file.createNewFile();
+            }
+            // 打开一个随机访问文件流，按读写方式
+            RandomAccessFile randomFile = new RandomAccessFile(filePath, "rw");
 
+            // 文件长度，字节数
+            long fileLength = randomFile.length();
+            // 将写文件指针移到文件尾。
+            randomFile.seek(fileLength);
+
+            randomFile.writeBytes(content);
+
+            randomFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
