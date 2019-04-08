@@ -1,5 +1,6 @@
 package wkq.com.test;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,7 +10,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -29,6 +32,8 @@ import java.util.TimerTask;
 public class LocationService extends Service {
     private static final String TAG = "DaemonService";
     public static final int NOTICE_ID = 100;
+
+    private PowerManager.WakeLock wakeLock;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -57,9 +62,13 @@ public class LocationService extends Service {
                 date.setTime(time);
                 DateFormat df2 = new SimpleDateFormat("yyyy-MM-01 hh:mm:ss EE");
                 Log.e(TAG, df2.format(date) + "");
-                Utils. readFile(df2.format(date) + "/r/n");
+                Utils.readFile(df2.format(date));
             }
         }, 0, 10000);
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wakeLock= pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PARTIAL:");
+        wakeLock.acquire();
+
 
     }
 
@@ -74,6 +83,13 @@ public class LocationService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        //
+//别忘了在操作完毕之后释放掉
+        if (wakeLock != null) {
+            wakeLock.release();
+            wakeLock = null;
+        }
         // 如果Service被杀死，干掉通知
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
 //            NotificationManager mManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -82,8 +98,9 @@ public class LocationService extends Service {
         // 重启自己
         Intent intent = new Intent(getApplicationContext(), LocationService.class);
         startService(intent);
-    }
 
+
+    }
 
 
 }
